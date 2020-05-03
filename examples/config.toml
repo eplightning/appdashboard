@@ -1,0 +1,36 @@
+[environments.dev]
+name = "Dev"
+variables = { x = "test", y = 2 }
+
+[applications.app]
+name = "An app"
+variables = { app_var = "app" }
+
+[templates.template]
+template = """
+test = "test"
+"""
+
+[sources.kubernetes-dev-cluster]
+name = "Dev Cluster"
+type = "kubernetes"
+
+[autodiscovery.dev-kubernetes]
+name = "Autodiscovery"
+type = "openshift-deploymentconfig"
+source = "dev-cluster"
+
+[[instances]]
+environment = "dev"
+application = "app"
+variables = { app_var = "app" }
+template = "template"
+data = { some_extra_data = "data" }
+
+[instances.extractors]
+version = "$.providers.openshift.image_tag"
+
+[instances.providers.openshift]
+type = "openshift-deploymentconfig"
+source = "dev-cluster"
+name = "Openshift"

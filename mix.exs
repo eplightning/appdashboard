@@ -47,7 +47,9 @@ defmodule AppDashboard.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:logger_json, "~> 4.0"}
+      {:logger_json, "~> 4.0"},
+      {:toml, "~> 0.6.1"},
+      {:file_system, "~> 0.2"},
     ]
   end
 
