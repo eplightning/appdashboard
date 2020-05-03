@@ -9,7 +9,7 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
     |> parse_hashmap(input, "templates", &(parse_template(&1, &2)))
     |> parse_hashmap(input, "autodiscovery", &(parse_autodiscovery(&1, &2)))
     |> parse_hashmap(input, "sources", &(parse_source(&1, &2)))
-    |> parse_list(input, "instances", &(parse_instance(&1)))
+    |> parse_instances(input)
   end
 
   defp parse_hashmap(output, %{} = input, key, func) do
@@ -21,13 +21,12 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
     Map.put(output, String.to_atom(key), parsed_map)
   end
 
-  defp parse_list(output, %{} = input, key, func) do
-    parsed_list = case Map.get(input, key) do
-      value when is_list(value) -> Enum.map(value, func)
-      _ -> []
-    end
+  defp parse_instances(output, %{"instances" => value}) when is_list(value) do
+    instances = value
+      |> Enum.map(fn input -> parse_instance(input) end)
+      |> Enum.into(%{}, fn instance -> {{instance.environment, instance.application}, instance} end)
 
-    Map.put(output, String.to_atom(key), parsed_list)
+    Map.put(output, :instances, instances)
   end
 
   defp parse_env(id, input), do: %Config.Environment{id: id} |> to_struct(input, ["name", "variables"])

@@ -13,15 +13,18 @@ defmodule AppDashboard.ConfigPlane.File.Loader do
     GenServer.start_link(__MODULE__, {path, subscriber}, name: name)
   end
 
-  def request_config(opts \\ []) do
+  def reload(opts \\ []) do
     name = Keyword.get(opts, :name, __MODULE__)
     GenServer.cast(name, :reload)
   end
 
   @impl true
   def init({path, _} = state) do
+    Process.send_after(self(), :reload, 0)
+
     {:ok, pid} = FileSystem.start_link(dirs: [path])
     FileSystem.subscribe(pid)
+
     {:ok, state}
   end
 

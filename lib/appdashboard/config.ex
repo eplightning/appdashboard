@@ -1,6 +1,6 @@
 defmodule AppDashboard.Config do
 
-  defstruct environments: %{}, applications: %{}, templates: %{}, sources: %{}, autodiscovery: %{}, instances: []
+  defstruct environments: %{}, applications: %{}, templates: %{}, sources: %{}, autodiscovery: %{}, instances: %{}
 
   defmodule Environment do
     defstruct id: "", name: "", variables: %{}
@@ -23,7 +23,7 @@ defmodule AppDashboard.Config do
   end
 
   defmodule Instance do
-    defstruct environment: "", application: "", template: "", variables: %{}, data: %{}, extractors: %{}, providers: []
+    defstruct environment: "", application: "", template: "", variables: %{}, data: %{}, extractors: %{}, providers: %{}
 
     defmodule Provider do
       defstruct id: "", name: "", type: "", source: "", config: %{}

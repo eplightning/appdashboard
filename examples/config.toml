@@ -16,7 +16,7 @@ name = "Dev Cluster"
 type = "kubernetes"
 
 [autodiscovery.dev-kubernetes]
-name = "Autodiscovery"
+name = "Autodiscovery K8s"
 type = "openshift-deploymentconfig"
 source = "dev-cluster"
 
