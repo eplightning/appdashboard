@@ -31,8 +31,12 @@ defmodule AppDashboard.ConfigPlane.File.Loader do
   end
 
   @impl true
-  def handle_info({:file_event, _watcher, {_path, [:modified | _other_events]}}, state) do
-    handle_info(:reload, state)
+  def handle_info({:file_event, _watcher, {_path, events}}, state) do
+    if Enum.member?(events, :modified) do
+      handle_info(:reload, state)
+    else
+      {:noreply, state}
+    end
   end
 
   @impl true
