@@ -23,6 +23,16 @@ defmodule AppDashboard.ConfigPlane.Snapshot do
     GenServer.call(name, :get)
   end
 
+  def get_instance({app, env}, opts \\ []) do
+    name = Keyword.get(opts, :name, __MODULE__)
+    GenServer.call(name, {:get_instance, {app, env}})
+  end
+
+  def get_ui_config(opts \\ []) do
+    name = Keyword.get(opts, :name, __MODULE__)
+    GenServer.call(name, :get_ui_config)
+  end
+
   def update(%Config{} = config, opts \\ []) do
     name = Keyword.get(opts, :name, __MODULE__)
     GenServer.cast(name, {:update, config})
@@ -37,6 +47,16 @@ defmodule AppDashboard.ConfigPlane.Snapshot do
   def handle_call(:get, _from, %State{snapshot: snapshot} = state), do: {:reply, snapshot, state}
 
   @impl true
+  def handle_call({:get_instance, id}, _from, %State{snapshot: snapshot} = state) do
+    {:reply, Config.Subset.Instance.create(snapshot, id), state}
+  end
+
+  @impl true
+  def handle_call(:get_ui_config, _from, %State{snapshot: snapshot} = state) do
+    {:reply, Config.Subset.Ui.create(snapshot), state}
+  end
+
+  @impl true
   def handle_cast({:update, new_config}, %State{pending: pending, delay: delay} = state) do
     if is_nil(pending), do: Process.send_after(self(), :update, delay)
 
@@ -47,7 +67,7 @@ defmodule AppDashboard.ConfigPlane.Snapshot do
   def handle_info(:update, %State{pending: pending, pubsub: pubsub, snapshot: snapshot} = state) do
     broadcast_diff(pubsub, snapshot, pending)
 
-    {:noreply, %State{state | snapshot: pending}}
+    {:noreply, %State{state | snapshot: pending, pending: nil}}
   end
 
   defp broadcast_diff(pubsub, snapshot, pending) do

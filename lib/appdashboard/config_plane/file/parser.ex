@@ -12,6 +12,12 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
     |> parse_instances(input)
   end
 
+  def parse_instance(input) do
+    %Config.Instance{}
+    |> to_struct(input, ["environment", "application", "template", "variables", "data", "extractors"])
+    |> parse_hashmap(input, "providers", &(parse_provider(&1, &2)))
+  end
+
   defp parse_hashmap(output, %{} = input, key, func) do
     parsed_map = case Map.get(input, key) do
       value when is_map(value) -> for {k, v} <- value, is_binary(k), k != "", into: %{}, do: {k, func.(k, v)}
@@ -35,12 +41,6 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
   defp parse_autodiscovery(id, input), do: %Config.Autodiscovery{id: id} |> to_struct(input, ["name", "type", "source", "config"])
   defp parse_source(id, input), do: %Config.Source{id: id} |> to_struct(input, ["name", "type", "config"])
   defp parse_provider(id, input), do: %Config.Instance.Provider{id: id} |> to_struct(input, ["name", "type", "source", "config"])
-
-  defp parse_instance(input) do
-    %Config.Instance{}
-    |> to_struct(input, ["environment", "application", "template", "variables", "data", "extractors"])
-    |> parse_hashmap(input, "providers", &(parse_provider(&1, &2)))
-  end
 
   defp to_struct(output, input, keys) do
     Enum.reduce(keys, output, fn key, acc ->

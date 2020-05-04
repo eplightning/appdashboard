@@ -8,10 +8,17 @@ variables = { app_var = "app" }
 
 [templates.template]
 template = """
-test = "test"
+[extractors]
+app_extractor = "{{ app_var }}"
+env_extractor = "{{ x }}"
+
+[providers.something]
+type = "openshift-deploymentconfig"
+source = "dev-cluster"
+name = "{{ inst_var }}"
 """
 
-[sources.kubernetes-dev-cluster]
+[sources.dev-cluster]
 name = "Dev Cluster"
 type = "kubernetes"
 
@@ -23,8 +30,7 @@ source = "dev-cluster"
 [[instances]]
 environment = "dev"
 application = "app"
-variables = { app_var = "app" }
-template = "template"
+variables = { inst_var = "app" }
 data = { some_extra_data = "data" }
 
 [instances.extractors]
@@ -34,3 +40,10 @@ version = "$.providers.openshift.image_tag"
 type = "openshift-deploymentconfig"
 source = "dev-cluster"
 name = "Openshift"
+
+[[instances]]
+environment = "dev"
+application = "app"
+template = "template"
+variables = { inst_var = "app" }
+data = { some_extra_data = "data" }
