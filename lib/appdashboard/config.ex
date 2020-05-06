@@ -26,7 +26,7 @@ defmodule AppDashboard.Config do
     defstruct environment: "", application: "", template: "", variables: %{}, data: %{}, extractors: %{}, providers: %{}
 
     defmodule Provider do
-      defstruct id: "", name: "", type: "", source: "", config: %{}
+      defstruct id: "", name: "", type: "", source: "", order: 0, config: %{}
     end
   end
 

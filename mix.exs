@@ -50,7 +50,8 @@ defmodule AppDashboard.MixProject do
       {:logger_json, "~> 4.0"},
       {:toml, "~> 0.6.1"},
       {:file_system, "~> 0.2"},
-      {:solid, "~> 0.4.0"}
+      {:solid, "~> 0.4.0"},
+      {:exjsonpath, "~> 0.1"}
     ]
   end
 

@@ -44,7 +44,7 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
   defp parse_template(id, input), do: %Config.Template{id: id} |> to_struct(input, ["template"])
   defp parse_discovery(id, input), do: %Config.Discovery{id: id} |> to_struct(input, ["name", "type", "source", "config"])
   defp parse_source(id, input), do: %Config.Source{id: id} |> to_struct(input, ["name", "type", "config"])
-  defp parse_provider(id, input), do: %Config.Instance.Provider{id: id} |> to_struct(input, ["name", "type", "source", "config"])
+  defp parse_provider(id, input), do: %Config.Instance.Provider{id: id} |> to_struct(input, ["name", "type", "source", "order", "config"])
 
   defp to_struct(output, input, keys) do
     Enum.reduce(keys, output, fn key, acc ->

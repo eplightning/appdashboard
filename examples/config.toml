@@ -9,11 +9,11 @@ variables = { app_var = "app" }
 [templates.template]
 template = """
 [extractors]
-app_extractor = "{{ app_var }}"
+full_extractor = "$.some_extra_data"
 env_extractor = "{{ x }}"
 
 [providers.something]
-type = "openshift-deploymentconfigs"
+type = "kubernetes"
 source = "dev-cluster"
 name = "{{ inst_var }}"
 """
