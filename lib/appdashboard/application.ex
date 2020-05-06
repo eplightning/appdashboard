@@ -13,6 +13,8 @@ defmodule AppDashboard.Application do
       AppDashboardWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: AppDashboard.PubSub},
+      # Config plane
+      AppDashboard.ConfigPlane,
       # Start the Endpoint (http/https)
       AppDashboardWeb.Endpoint
       # Start a worker by calling: AppDashboard.Worker.start_link(arg)

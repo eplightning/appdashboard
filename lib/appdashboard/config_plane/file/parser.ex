@@ -7,7 +7,7 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
     |> parse_hashmap(input, "environments", &(parse_env(&1, &2)))
     |> parse_hashmap(input, "applications", &(parse_app(&1, &2)))
     |> parse_hashmap(input, "templates", &(parse_template(&1, &2)))
-    |> parse_hashmap(input, "autodiscovery", &(parse_autodiscovery(&1, &2)))
+    |> parse_hashmap(input, "discovery", &(parse_discovery(&1, &2)))
     |> parse_hashmap(input, "sources", &(parse_source(&1, &2)))
     |> parse_instances(input)
   end
@@ -35,10 +35,14 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
     Map.put(output, :instances, instances)
   end
 
+  defp parse_instances(output, _) do
+    Map.put(output, :instances, %{})
+  end
+
   defp parse_env(id, input), do: %Config.Environment{id: id} |> to_struct(input, ["name", "variables"])
   defp parse_app(id, input), do: %Config.Application{id: id} |> to_struct(input, ["name", "variables"])
   defp parse_template(id, input), do: %Config.Template{id: id} |> to_struct(input, ["template"])
-  defp parse_autodiscovery(id, input), do: %Config.Autodiscovery{id: id} |> to_struct(input, ["name", "type", "source", "config"])
+  defp parse_discovery(id, input), do: %Config.Discovery{id: id} |> to_struct(input, ["name", "type", "source", "config"])
   defp parse_source(id, input), do: %Config.Source{id: id} |> to_struct(input, ["name", "type", "config"])
   defp parse_provider(id, input), do: %Config.Instance.Provider{id: id} |> to_struct(input, ["name", "type", "source", "config"])
 

@@ -7,7 +7,7 @@ defmodule AppDashboard.ConfigPlane.File.Loader do
 
   def start_link(opts) do
     {:ok, path} = Keyword.fetch(opts, :path)
-    subscriber = Keyword.get(opts, :subscriber, self())
+    subscriber = Keyword.get(opts, :subscriber, AppDashboard.ConfigPlane.Processor)
     name = Keyword.get(opts, :name, __MODULE__)
 
     GenServer.start_link(__MODULE__, {path, subscriber}, name: name)

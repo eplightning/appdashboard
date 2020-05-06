@@ -13,18 +13,18 @@ app_extractor = "{{ app_var }}"
 env_extractor = "{{ x }}"
 
 [providers.something]
-type = "openshift-deploymentconfig"
+type = "openshift-deploymentconfigs"
 source = "dev-cluster"
 name = "{{ inst_var }}"
 """
 
 [sources.dev-cluster]
 name = "Dev Cluster"
-type = "kubernetes"
+type = "kubernetess"
 
-[autodiscovery.dev-kubernetes]
+[discovery.dev-kubernetes]
 name = "Autodiscovery K8s"
-type = "openshift-deploymentconfig"
+type = "kubernetes"
 source = "dev-cluster"
 
 [[instances]]

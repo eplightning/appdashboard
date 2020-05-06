@@ -16,7 +16,7 @@ name = "Dev Cluster"
 type = "kubernetes"
 
 [autodiscovery.dev-kubernetes]
-type = "openshift-deploymentconfig"
+type = "kubernetes"
 source = "dev-cluster"
 
 [[instances]]

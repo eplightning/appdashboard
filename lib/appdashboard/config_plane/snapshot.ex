@@ -71,7 +71,7 @@ defmodule AppDashboard.ConfigPlane.Snapshot do
   end
 
   defp broadcast_diff(pubsub, snapshot, pending) do
-    diff = Diff.calculate_diff(snapshot, pending)
+    diff = Diff.calculate_config_diff(snapshot, pending)
     broadcast_single_diff(pubsub, diff)
   end
 

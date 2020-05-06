@@ -1,6 +1,6 @@
 defmodule AppDashboard.Config do
 
-  defstruct environments: %{}, applications: %{}, templates: %{}, sources: %{}, autodiscovery: %{}, instances: %{}
+  defstruct environments: %{}, applications: %{}, templates: %{}, sources: %{}, discovery: %{}, instances: %{}
 
   defmodule Environment do
     defstruct id: "", name: "", variables: %{}
@@ -14,7 +14,7 @@ defmodule AppDashboard.Config do
     defstruct id: "", template: ""
   end
 
-  defmodule Autodiscovery do
+  defmodule Discovery do
     defstruct id: "", name: "", type: "", source: "", config: %{}
   end
 
@@ -59,6 +59,22 @@ defmodule AppDashboard.Config do
       |> Enum.filter(fn {k, _} -> k in used_sources end)
       |> Enum.into(%{})
     end
+  end
+
+  defmodule Subset.Discovery do
+    defstruct discovery: %AppDashboard.Config.Discovery{}, source: nil
+
+    def create(%AppDashboard.Config{discovery: discovery_list, sources: sources}, id) do
+      case Map.fetch(discovery_list, id) do
+        {:ok, discovery} -> {:ok, %AppDashboard.Config.Subset.Discovery{discovery: discovery, source: source_for_discovery(sources, discovery)}}
+        _ -> :error
+      end
+    end
+
+    defp source_for_discovery(sources, %AppDashboard.Config.Discovery{source: source}) when is_binary(source) and source != "" do
+      Map.get(sources, source, nil)
+    end
+    defp source_for_discovery(_sources, _discovery), do: nil
   end
 
 end

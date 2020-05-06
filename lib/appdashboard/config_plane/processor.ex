@@ -6,11 +6,12 @@ defmodule AppDashboard.ConfigPlane.Processor do
   alias AppDashboard.Config
   alias AppDashboard.ConfigPlane.File.Parser
   alias AppDashboard.ConfigPlane.Snapshot
+  alias AppDashboard.ConfigPlane.Processor.Discovery
 
   defmodule State do
     defstruct snapshot: AppDashboard.ConfigPlane.Snapshot,
-              discoveries: %{},
-              discovered: %{},
+              raw_config: %Config{},
+              discovery: %Discovery.State{},
               templates: %{}
   end
 
@@ -23,26 +24,37 @@ defmodule AppDashboard.ConfigPlane.Processor do
 
   @impl true
   def init(state) do
-    {:ok, state}
+    {:ok, _, discovery} = Discovery.start_link()
+
+    {:ok, %State{state | discovery: discovery}}
   end
 
   @impl true
-  def handle_info({:config, %Config{templates: templates, instances: instances} = config}, %{snapshot: snapshot} = state) do
-    new_state = %State{state | templates: compile_templates(templates)}
+  def handle_info({:config, %Config{templates: templates} = config}, %{discovery: discovery} = state) do
+    new_state = %State{state | templates: compile_templates(templates), raw_config: config, discovery: Discovery.update_config(config, discovery)}
 
-    # TODO: update discoveries
-    # TODO: merge instances with discovered instances
+    process(new_state)
+  end
 
+  @impl true
+  def handle_info({:discovery, {_id, _instances} = msg}, %{discovery: discovery} = state) do
+    new_state = %State{state | discovery: Discovery.handle_discovery(msg, discovery)}
+
+    process(new_state)
+  end
+
+  defp process(%State{raw_config: %Config{instances: instances} = config, templates: templates, discovery: discovery, snapshot: snapshot} = state) do
     processed_instances =
-      instances
-      |> Enum.map(fn {id, instance} -> {id, process_instance(instance, config, new_state)} end)
+      Discovery.get_instances(discovery)
+      |> Enum.concat(instances)
+      |> Enum.map(fn {id, instance} -> {id, process_instance(instance, config, templates)} end)
       |> Enum.into(%{})
 
     processed_config = %Config{config | instances: processed_instances}
 
     Snapshot.update(processed_config, name: snapshot)
 
-    {:noreply, new_state}
+    {:noreply, state}
   end
 
   defp compile_templates(templates) do
@@ -57,7 +69,7 @@ defmodule AppDashboard.ConfigPlane.Processor do
   end
 
   defp process_instance(%Config.Instance{template: template} = instance, _config, _state) when template == "", do: instance
-  defp process_instance(%Config.Instance{template: template} = instance, config, %State{templates: templates}) do
+  defp process_instance(%Config.Instance{template: template} = instance, config, templates) do
     case Map.fetch(templates, template) do
       {:ok, parsed_template} ->
         apply_template(instance, parsed_template, instance_context(instance, config))
