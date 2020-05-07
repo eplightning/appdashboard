@@ -1,5 +1,4 @@
 defmodule AppDashboard.DataPlane.Snapshot do
-
   use GenServer
 
   alias AppDashboard.DataPlane.Diff
@@ -70,5 +69,4 @@ defmodule AppDashboard.DataPlane.Snapshot do
   end
 
   defp broadcast_single_diff(_pubsub, _diffs), do: nil
-
 end

@@ -28,6 +28,11 @@ defmodule AppDashboard.ConfigPlane.Snapshot do
     GenServer.call(name, {:get_instance, {app, env}})
   end
 
+  def get_instance_ids(opts \\ []) do
+    name = Keyword.get(opts, :name, __MODULE__)
+    GenServer.call(name, :get_instance_ids)
+  end
+
   def get_ui_config(opts \\ []) do
     name = Keyword.get(opts, :name, __MODULE__)
     GenServer.call(name, :get_ui_config)
@@ -49,6 +54,15 @@ defmodule AppDashboard.ConfigPlane.Snapshot do
   @impl true
   def handle_call({:get_instance, id}, _from, %State{snapshot: snapshot} = state) do
     {:reply, Config.Subset.Instance.create(snapshot, id), state}
+  end
+
+  @impl true
+  def handle_call(:get_instance_ids, _from, %State{snapshot: snapshot} = state) do
+    ids =
+      snapshot.instances
+      |> Enum.map(fn {id, _v} -> id end)
+
+    {:reply, ids, state}
   end
 
   @impl true

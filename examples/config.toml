@@ -22,6 +22,21 @@ name = "{{ inst_var }}"
 name = "Dev Cluster"
 type = "kubernetess"
 
+[sources.http-test]
+name = "HTTP test"
+type = "http"
+
+[sources.http-test.config]
+auth_type = "bearer" # bearer | basic | none
+username = "name"
+password = "token"
+# tls_insecure = true
+# tls_cacert = ""
+# tls_cacert_file = ""
+# bearer = ""
+# bearer_file = ""
+# extra_headers = []
+
 [discovery.dev-kubernetes]
 name = "Autodiscovery K8s"
 type = "kubernetes"
@@ -46,4 +61,4 @@ environment = "dev"
 application = "app"
 template = "template"
 variables = { inst_var = "app" }
-data = { some_extra_data = "data" }
+data = { some_extra_data = "data2" }

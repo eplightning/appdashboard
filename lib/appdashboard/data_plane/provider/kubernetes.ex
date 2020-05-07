@@ -1,5 +1,4 @@
 defmodule AppDashboard.DataPlane.Provider.Kubernetes do
-
   use GenServer
 
   alias AppDashboard.DataPlane.Provider
@@ -24,5 +23,4 @@ defmodule AppDashboard.DataPlane.Provider.Kubernetes do
   def update_data(_provider_pid, data) do
     {:ok, Map.put(data, "wow", "hehe"), 2000}
   end
-
 end

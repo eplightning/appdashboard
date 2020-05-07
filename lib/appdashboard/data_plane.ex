@@ -12,7 +12,8 @@ defmodule AppDashboard.DataPlane do
   @impl true
   def init(_init_arg) do
     children = [
-      DataPlane.Snapshot
+      DataPlane.Snapshot,
+      DataPlane.Leader
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)
