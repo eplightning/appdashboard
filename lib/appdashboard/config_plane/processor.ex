@@ -1,5 +1,4 @@
 defmodule AppDashboard.ConfigPlane.Processor do
-
   use GenServer
 
   require Logger
@@ -30,8 +29,16 @@ defmodule AppDashboard.ConfigPlane.Processor do
   end
 
   @impl true
-  def handle_info({:config, %Config{templates: templates} = config}, %{discovery: discovery} = state) do
-    new_state = %State{state | templates: compile_templates(templates), raw_config: config, discovery: Discovery.update_config(config, discovery)}
+  def handle_info(
+        {:config, %Config{templates: templates} = config},
+        %{discovery: discovery} = state
+      ) do
+    new_state = %State{
+      state
+      | templates: compile_templates(templates),
+        raw_config: config,
+        discovery: Discovery.update_config(config, discovery)
+    }
 
     process(new_state)
   end
@@ -43,24 +50,57 @@ defmodule AppDashboard.ConfigPlane.Processor do
     process(new_state)
   end
 
-  defp process(%State{raw_config: %Config{instances: instances} = config, templates: templates, discovery: discovery, snapshot: snapshot} = state) do
+  defp process(
+         %State{
+           raw_config: %Config{instances: instances} = config,
+           templates: templates,
+           discovery: discovery,
+           snapshot: snapshot
+         } = state
+       ) do
     processed_instances =
       Discovery.get_instances(discovery)
       |> Enum.concat(instances)
       |> Enum.map(fn {id, instance} -> {id, process_instance(instance, config, templates)} end)
       |> Enum.into(%{})
 
-    processed_config = %Config{config | instances: processed_instances}
+    processed_config =
+      %Config{config | instances: processed_instances}
+      |> add_missing_apps_and_envs()
 
     Snapshot.update(processed_config, name: snapshot)
 
     {:noreply, state}
   end
 
+  defp add_missing_apps_and_envs(%Config{instances: instances} = config) do
+    instances
+    |> Enum.reduce(config, fn {{env, app}, _v}, acc ->
+      %Config{
+        acc
+        | applications:
+            if(!Map.has_key?(acc.applications, app),
+              do: Map.put(acc.applications, app, skeleton_app(app)),
+              else: acc.applications
+            ),
+          environments:
+            if(!Map.has_key?(acc.environments, env),
+              do: Map.put(acc.environments, env, skeleton_env(env)),
+              else: acc.environments
+            )
+      }
+    end)
+  end
+
+  defp skeleton_app(id), do: %Config.Application{id: id, name: id}
+  defp skeleton_env(id), do: %Config.Environment{id: id, name: id}
+
   defp compile_templates(templates) do
     Enum.reduce(templates, %{}, fn {id, %Config.Template{template: template}}, acc ->
       case Solid.parse(template) do
-        {:ok, parsed} -> Map.put(acc, id, parsed)
+        {:ok, parsed} ->
+          Map.put(acc, id, parsed)
+
         {:error, error} ->
           Logger.error("Error while parsing template #{inspect(error)}")
           acc
@@ -68,11 +108,15 @@ defmodule AppDashboard.ConfigPlane.Processor do
     end)
   end
 
-  defp process_instance(%Config.Instance{template: template} = instance, _config, _state) when template == "", do: instance
+  defp process_instance(%Config.Instance{template: template} = instance, _config, _state)
+       when template == "",
+       do: instance
+
   defp process_instance(%Config.Instance{template: template} = instance, config, templates) do
     case Map.fetch(templates, template) do
       {:ok, parsed_template} ->
         apply_template(instance, parsed_template, instance_context(instance, config))
+
       _ ->
         Logger.error("Template '#{template}' could not be found")
         instance
@@ -98,7 +142,9 @@ defmodule AppDashboard.ConfigPlane.Processor do
     toml = Solid.render(template, context) |> to_string
 
     case Toml.decode(toml) do
-      {:ok, decoded} -> Parser.parse_instance(decoded)
+      {:ok, decoded} ->
+        Parser.parse_instance(decoded)
+
       {:error, error} ->
         Logger.error("Error while parsing template config #{inspect(error)}")
         %AppDashboard.Config.Instance{}
@@ -124,5 +170,4 @@ defmodule AppDashboard.ConfigPlane.Processor do
     |> Map.merge(env_vars)
     |> Map.merge(instance_vars)
   end
-
 end

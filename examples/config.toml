@@ -28,37 +28,48 @@ type = "http"
 
 [sources.http-test.config]
 auth_type = "bearer" # bearer | basic | none
-username = "name"
-password = "token"
-# tls_insecure = true
-# tls_cacert = ""
-# tls_cacert_file = ""
-# bearer = ""
+# basic_user = "name"
+# basic_pwd = "token"
+# basic_pwd_file = "file"
+bearer = "eyJhbGciOiJSUzI1NiIsImtpZCI6Ilp0UVJnaFJoWkVheWY1T24wTkRSUm1UMElyVDdDVGVwbE1NNDVmdXdDLTQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJ0ZXN0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImVsaXhpci10b2tlbi03d2NneiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJlbGl4aXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJmZDdkMjc4Yy03ZDJlLTQ2ZjgtOTU3Yi05YTdjMDE1YzE4YzkiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6dGVzdDplbGl4aXIifQ.amRDMth8hZwNk2AS0qqQ9xEP52xsvGt0BtQNgCe1SIxeH7-U3ZAOnSYk16HtGchZ2GCXhoJW6Eleq9E3w6nBpT2MI-zcDuEUdbicDyluseLJljigzjYfryK3NNeFF8xQf0Ngpp1efPuTvOOgzSoQoBjQU5rhDFsG6DPB7v-AqnIJjcHJqJ-zpKDzV8wQy48ydc79tri3f5yIPR4SlqtQpreMC8okOxHB1eWhQPc-VGn_x3xqa7z2daxJ0d6d69uPOXKGcPDI-Yv9hmOkv1JmrsKRwXkiIkdEYuD2otDNWcREng-PSGhJ6FzLxTR67LdV65jESGUwKA3l6vtMHEtnjw"
 # bearer_file = ""
-# extra_headers = []
+# tls_insecure = true
+tls_cacert_file = "/home/eplightning/KubeTests/cert"
+# tls_clientcert_file = "file"
+# tls_clientkey_file = "file"
+# extra_headers = { "X-Nice-Header" = "header" }
 
 [discovery.dev-kubernetes]
 name = "Autodiscovery K8s"
-type = "kubernetes"
-source = "dev-cluster"
+type = "http"
+source = "http-test"
 
-[[instances]]
+[discovery.dev-kubernetes.config]
+uri = "https://127.0.0.1:16443/api/v1/namespaces/test/configmaps"
+instance_path = "$.items.*"
 environment = "dev"
-application = "app"
-variables = { inst_var = "app" }
-data = { some_extra_data = "data" }
-
-[instances.extractors]
-version = "$.providers.openshift.image_tag"
-
-[instances.providers.openshift]
-type = "openshift-deploymentconfig"
-source = "dev-cluster"
-name = "Openshift"
-
-[[instances]]
-environment = "dev"
-application = "app"
 template = "template"
-variables = { inst_var = "app" }
-data = { some_extra_data = "data2" }
+application_path = "$.metadata.name"
+interval = 1000
+
+# [[instances]]
+# environment = "dev"
+# application = "app"
+# variables = { inst_var = "app" }
+# data = { some_extra_data = "data" }
+
+# [instances.extractors]
+# version = "$.providers.openshift.image_tag"
+
+# [instances.providers.openshift]
+# type = "http"
+# source = "http-test"
+# name = "Openshift"
+# uri = "https://127.0.0.1:16443"
+
+# [[instances]]
+# environment = "dev"
+# application = "app"
+# template = "template"
+# variables = { inst_var = "app" }
+# data = { some_extra_data = "data2" }

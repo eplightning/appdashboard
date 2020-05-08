@@ -10,7 +10,7 @@ defmodule AppDashboard.ConfigPlane.Processor.Discovery do
     defstruct discovered: %{}, active: %{}, supervisor: nil
   end
 
-  @discovery_map %{"kubernetes" => AppDashboard.ConfigPlane.Discovery.Kubernetes}
+  @discovery_map %{"http" => AppDashboard.ConfigPlane.Discovery.HTTP}
   @discovery_types Map.keys(@discovery_map)
 
   def update_config(%Config{} = config, %State{} = state) do
@@ -114,8 +114,8 @@ defmodule AppDashboard.ConfigPlane.Processor.Discovery do
       {:ok, _pid} -> :ok
       {:ok, _pid, _info} -> :ok
       {:error, err} when err in [:already_started, :already_present] -> {:error, err}
-      _ ->
-        Logger.error("Discovery failed to start, ignored: #{id}")
+      {:error, err} ->
+        Logger.error("Discovery #{id} failed to start, ignored: #{inspect(err)}")
         :ok
     end
   end
