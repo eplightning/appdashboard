@@ -60,7 +60,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
             application: application,
             environment: environment,
             template: template,
-            variables: data
+            variables: %{"discovery" => data}
           })
         else
           {:error, error} ->

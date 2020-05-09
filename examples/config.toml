@@ -13,9 +13,19 @@ full_extractor = "$.some_extra_data"
 env_extractor = "{{ x }}"
 
 [providers.something]
-type = "kubernetes"
-source = "dev-cluster"
+type = "http"
+source = "http-test"
 name = "{{ inst_var }}"
+
+[providers.something.config]
+uri = "https://127.0.0.1:16443/api/v1/namespaces/test/configmaps/{{ discovery.metadata.name }}"
+interval = 10000
+
+[providers.something.config.extractors.jsonpath]
+well = "$"
+
+[providers.something.config.extractors.template]
+test = "{% raw %}{{ data.metadata.name }}{% endraw %}"
 """
 
 [sources.dev-cluster]
@@ -46,7 +56,7 @@ source = "http-test"
 
 [discovery.dev-kubernetes.config]
 uri = "https://127.0.0.1:16443/api/v1/namespaces/test/configmaps"
-instance_path = "$.items.*"
+instance_path = "$.items[*]"
 environment = "dev"
 template = "template"
 application_path = "$.metadata.name"
