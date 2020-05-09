@@ -5,8 +5,9 @@ defmodule AppDashboard.DataPlane.Instance do
   alias AppDashboard.Config.Subset.Instance
   alias AppDashboard.Config.Instance.Provider, as: ProviderConfig
   alias AppDashboard.Config.Instance, as: InstanceConfig
+  alias AppDashboard.Utils.JSONPath
 
-  @provider_map %{"kubernetes" => AppDashboard.DataPlane.Provider.Kubernetes}
+  @provider_map %{"http" => AppDashboard.DataPlane.Provider.HTTP}
   @provider_types Map.keys(@provider_map)
 
   defmodule State do
@@ -67,8 +68,8 @@ defmodule AppDashboard.DataPlane.Instance do
     updated_data =
       extractors
       |> Enum.reduce(data, fn {name, path}, data ->
-        case ExJSONPath.eval(data, path) do
-          {:ok, [h | _]} -> Map.put(data, name, h)
+        case JSONPath.query(data, path) do
+          {:ok, value} -> Map.put(data, name, value)
           _ -> Map.put(data, name, "")
         end
       end)
@@ -83,7 +84,7 @@ defmodule AppDashboard.DataPlane.Instance do
       {_k, _val} -> false
     end)
     |> Enum.map(fn {k, jsonpath} ->
-      case ExJSONPath.compile(jsonpath) do
+      case JSONPath.compile(jsonpath) do
         {:ok, compiled} ->
           {k, compiled}
 

@@ -8,6 +8,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
   alias AppDashboard.Config.Subset.Discovery, as: Subset
   alias AppDashboard.Config.Discovery, as: Config
   alias AppDashboard.Utils.HTTPConfig
+  alias AppDashboard.Utils.JSONPath
 
   defmodule State do
     defstruct id: nil,
@@ -77,15 +78,20 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
   defp eval_single(_data, path) when is_binary(path), do: {:ok, path}
 
   defp eval_single(data, path) do
-    case ExJSONPath.eval(data, path) do
-      {:ok, [result | _]} -> {:ok, result}
-      {:ok, []} -> {:error, :not_found}
+    case JSONPath.query(data, path) do
+      {:ok, nil} -> {:error, :not_found}
+      {:ok, result} -> {:ok, result}
       {:error, error} -> {:error, error}
     end
   end
 
   defp eval_list(data, path) do
-    ExJSONPath.eval(data, path)
+    case JSONPath.query(data, path) do
+      {:ok, result} when is_list(result) -> {:ok, result}
+      {:ok, nil} -> {:ok, []}
+      {:ok, result} -> {:ok, [result]}
+      {:error, error} -> {:error, error}
+    end
   end
 
   defp response_to_data(%Mojito.Response{body: body, status_code: code})
@@ -115,7 +121,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
 
   defp populate_instance(state, %{"instance_path" => instance_path})
        when is_binary(instance_path) and instance_path != "" do
-    case ExJSONPath.compile(instance_path) do
+    case JSONPath.compile(instance_path) do
       {:ok, compiled} -> {:ok, %State{state | instance: compiled}}
       {:error, error} -> {:error, error}
     end
@@ -130,7 +136,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
 
   defp populate_environment(state, %{"environment_path" => environment})
        when is_binary(environment) and environment != "" do
-    case ExJSONPath.compile(environment) do
+    case JSONPath.compile(environment) do
       {:ok, compiled} -> {:ok, %State{state | environment: compiled}}
       {:error, error} -> {:error, error}
     end
@@ -145,7 +151,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
 
   defp populate_template(state, %{"template_path" => template})
        when is_binary(template) and template != "" do
-    case ExJSONPath.compile(template) do
+    case JSONPath.compile(template) do
       {:ok, compiled} -> {:ok, %State{state | template: compiled}}
       {:error, error} -> {:error, error}
     end
@@ -160,7 +166,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
 
   defp populate_application(state, %{"application_path" => application})
        when is_binary(application) and application != "" do
-    case ExJSONPath.compile(application) do
+    case JSONPath.compile(application) do
       {:ok, compiled} -> {:ok, %State{state | application: compiled}}
       {:error, error} -> {:error, error}
     end
