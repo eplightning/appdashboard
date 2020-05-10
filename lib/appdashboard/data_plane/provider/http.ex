@@ -60,7 +60,7 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
 
     merged_data = Map.merge(data, extracted_data)
 
-    {:reply, {:ok, merged_data, state.interval}, state}
+    {:reply, {:ok, merged_data, next_interval(state.interval)}, state}
   end
 
   @impl true
@@ -68,6 +68,12 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
     # TODO: remove when Mojito stops leaking messages
     {:noreply, state}
   end
+
+  defp next_interval({min, max}) do
+    min + :rand.uniform(max(max - min, 1))
+  end
+
+  defp next_interval(const), do: const
 
   defp extract_data(fetched, original, %State{extractor: config}) do
     fetched
@@ -126,6 +132,7 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
     }
   end
 
+  defp parse_interval(%{"interval_min" => min, "interval_max" => max}) when is_number(min) and is_number(max), do: {min, max}
   defp parse_interval(%{"interval" => interval}) when is_number(interval), do: interval
   defp parse_interval(_), do: 60 * 1000
 
