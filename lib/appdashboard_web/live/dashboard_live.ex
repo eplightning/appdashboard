@@ -12,17 +12,17 @@ defmodule AppDashboardWeb.DashboardLive do
   end
 
   @impl true
-  def handle_info(:config_changed, %{query: query} = socket) do
+  def handle_info(:config_changed, socket) do
     dashboard = build_dashboard()
 
-    {:noreply, assign(socket, dashboard: dashboard, filtered: filter_dashboard(dashboard, query))}
+    {:noreply, assign(socket, dashboard: dashboard, filtered: filter_dashboard(dashboard, socket.assigns.query))}
   end
 
   @impl true
-  def handle_info(:data_snapshot_changed, %{query: query} = socket) do
+  def handle_info(:data_snapshot_changed, socket) do
     dashboard = build_dashboard()
 
-    {:noreply, assign(socket, dashboard: dashboard, filtered: filter_dashboard(dashboard, query))}
+    {:noreply, assign(socket, dashboard: dashboard, filtered: filter_dashboard(dashboard, socket.assigns.query))}
   end
 
   @impl true

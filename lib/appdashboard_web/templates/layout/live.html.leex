@@ -4,12 +4,12 @@
       <button class="delete" phx-click="lv:clear-flash" phx-value-key="info"></button>
       <%= live_flash(@flash, :info) %>
     </div>
-  <%= end %>
+  <% end %>
   <%= if live_flash(@flash, :error) != nil do %>
     <div class="notification is-danger" role="alert">
       <button class="delete" phx-click="lv:clear-flash" phx-value-key="error"></button>
       <%= live_flash(@flash, :error) %>
     </div>
-  <%= end %>
+  <% end %>
   <%= @inner_content %>
 </main>
