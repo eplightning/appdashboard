@@ -39,7 +39,7 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
     Map.put(output, :instances, %{})
   end
 
-  defp parse_env(id, input), do: %Config.Environment{id: id} |> to_struct(input, ["name", "variables"])
+  defp parse_env(id, input), do: %Config.Environment{id: id} |> to_struct(input, ["name", "variables", "order"])
   defp parse_app(id, input), do: %Config.Application{id: id} |> to_struct(input, ["name", "variables"])
   defp parse_template(id, input), do: %Config.Template{id: id} |> to_struct(input, ["template"])
   defp parse_discovery(id, input), do: %Config.Discovery{id: id} |> to_struct(input, ["name", "type", "source", "config"])

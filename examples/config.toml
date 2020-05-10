@@ -1,16 +1,21 @@
 [environments.dev]
 name = "Dev"
 variables = { x = "test", y = 2 }
+order = 0
 
 [applications.app]
-name = "An app"
+name = "An appri"
 variables = { app_var = "app" }
 
 [templates.template]
 template = """
-[extractors]
-full_extractor = "$.some_extra_data"
-env_extractor = "{{ x }}"
+[[data.dashboard_config.properties]]
+name = "Version"
+key = "version"
+
+[[data.dashboard_config.properties]]
+name = "Name"
+key = "name"
 
 [providers.something]
 type = "http"
@@ -22,10 +27,8 @@ uri = "https://127.0.0.1:16443/api/v1/namespaces/test/configmaps/{{ discovery.me
 interval = 10000
 
 [providers.something.config.extractors.jsonpath]
-well = "$"
-
-[providers.something.config.extractors.template]
-test = "{% raw %}{{ data.metadata.name }}{% endraw %}"
+version = "$.metadata.resourceVersion"
+name = "$.metadata.name"
 """
 
 [sources.dev-cluster]
@@ -57,9 +60,9 @@ source = "http-test"
 [discovery.dev-kubernetes.config]
 uri = "https://127.0.0.1:16443/api/v1/namespaces/test/configmaps"
 instance_path = "$.items[*]"
-environment = "dev"
+environment_path = "$.metadata.name"
 template = "template"
-application_path = "$.metadata.name"
+application = "app"
 interval = 10000
 
 # [[instances]]

@@ -2,6 +2,11 @@
 @import "~bulma/bulma";
 @import "../node_modules/nprogress/nprogress.css";
 
+.m-lr-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* LiveView specific classes for your customizations */
 .invalid-feedback {
   color: #a94442;

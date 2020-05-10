@@ -2,6 +2,8 @@ defmodule AppDashboard.DataPlane.Diff do
   require Logger
 
   def calculate_data_diff(%{} = old, %{} = new) do
+    snapshot = if !Map.equal?(old, new), do: [:data_snapshot_changed], else: []
+
     old_keys = MapSet.new(Map.keys(old))
     new_keys = MapSet.new(Map.keys(new))
 
@@ -30,7 +32,7 @@ defmodule AppDashboard.DataPlane.Diff do
         {:data_changed, id}
       end)
 
-    removed ++ added ++ changed
+    snapshot ++ removed ++ added ++ changed
   end
 
   defp data_changed?(old, new), do: !Map.equal?(old, new)

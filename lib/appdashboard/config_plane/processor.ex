@@ -93,7 +93,7 @@ defmodule AppDashboard.ConfigPlane.Processor do
   end
 
   defp skeleton_app(id), do: %Config.Application{id: id, name: id}
-  defp skeleton_env(id), do: %Config.Environment{id: id, name: id}
+  defp skeleton_env(id), do: %Config.Environment{id: id, name: id, order: 99999}
 
   defp compile_templates(templates) do
     Enum.reduce(templates, %{}, fn {id, %Config.Template{template: template}}, acc ->

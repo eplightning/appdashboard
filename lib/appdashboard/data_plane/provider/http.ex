@@ -58,7 +58,15 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
 
     extracted_data = extract_data(fetched_data, data, state)
 
-    {:reply, {:ok, extracted_data, state.interval}, state}
+    merged_data = Map.merge(data, extracted_data)
+
+    {:reply, {:ok, merged_data, state.interval}, state}
+  end
+
+  @impl true
+  def handle_info(_, state) do
+    # TODO: remove when Mojito stops leaking messages
+    {:noreply, state}
   end
 
   defp extract_data(fetched, original, %State{extractor: config}) do

@@ -75,6 +75,12 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
     {:noreply, state}
   end
 
+  @impl true
+  def handle_info(_, state) do
+    # TODO: remove when Mojito stops leaking messages
+    {:noreply, state}
+  end
+
   defp eval_single(_data, path) when is_binary(path), do: {:ok, path}
 
   defp eval_single(data, path) do

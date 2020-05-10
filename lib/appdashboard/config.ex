@@ -3,7 +3,7 @@ defmodule AppDashboard.Config do
   defstruct environments: %{}, applications: %{}, templates: %{}, sources: %{}, discovery: %{}, instances: %{}
 
   defmodule Environment do
-    defstruct id: "", name: "", variables: %{}
+    defstruct id: "", name: "", variables: %{}, order: 0
   end
 
   defmodule Application do

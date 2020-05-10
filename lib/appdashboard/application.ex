@@ -18,8 +18,6 @@ defmodule AppDashboard.Application do
       AppDashboard.DataPlane,
       # Start the Endpoint (http/https)
       AppDashboardWeb.Endpoint
-      # Start a worker by calling: AppDashboard.Worker.start_link(arg)
-      # {AppDashboard.Worker, arg}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

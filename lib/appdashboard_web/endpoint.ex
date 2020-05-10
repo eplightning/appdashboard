@@ -10,10 +10,6 @@ defmodule AppDashboardWeb.Endpoint do
     signing_salt: "/TDrxYQ6"
   ]
 
-  socket "/socket", AppDashboardWeb.UserSocket,
-    websocket: true,
-    longpoll: false
-
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
