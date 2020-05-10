@@ -3,8 +3,10 @@ defmodule AppDashboardWeb.DashboardLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    Phoenix.PubSub.subscribe(AppDashboard.PubSub, "config")
-    Phoenix.PubSub.subscribe(AppDashboard.PubSub, "data")
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(AppDashboard.PubSub, "config")
+      Phoenix.PubSub.subscribe(AppDashboard.PubSub, "data")
+    end
 
     dashboard = build_dashboard()
 
