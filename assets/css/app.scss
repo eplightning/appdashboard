@@ -7,6 +7,16 @@
   margin-right: auto;
 }
 
+.property {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.property .level-item {
+  width: 100%;
+  text-align: center;
+}
+
 /* LiveView specific classes for your customizations */
 .invalid-feedback {
   color: #a94442;

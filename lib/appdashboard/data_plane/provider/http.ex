@@ -13,6 +13,7 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
               http_config: %HTTPConfig{},
               uri: nil,
               extractor: %Extractor{},
+              last_success: %{},
               interval: 60 * 1000
   end
 
@@ -42,25 +43,24 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
 
   @impl GenServer
   def handle_call({:update_data, data}, _from, state) do
-    fetched_data =
+    {extracted_data, new_state} =
       with {:ok, uri} <- eval_template(state.uri, %{"prev" => data}),
            {:ok, response} <-
              Mojito.request(:get, uri, HTTPConfig.headers(state.http_config), "",
                transport_opts: HTTPConfig.transport_opts(state.http_config)
              ),
-           {:ok, parsed_data} <- response_to_data(response) do
-        parsed_data
+           {:ok, parsed_data} <- response_to_data(response),
+           extracted_data = extract_data(parsed_data, data, state) do
+        {extracted_data, %State{state | last_success: extracted_data}}
       else
         {:error, error} ->
           Logger.warn("Provider #{state.id} could not fetch data: #{inspect(error)}")
-          %{}
+          {state.last_success, state}
       end
-
-    extracted_data = extract_data(fetched_data, data, state)
 
     merged_data = Map.merge(data, extracted_data)
 
-    {:reply, {:ok, merged_data, next_interval(state.interval)}, state}
+    {:reply, {:ok, merged_data, next_interval(state.interval)}, new_state}
   end
 
   @impl true
