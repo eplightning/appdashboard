@@ -36,18 +36,30 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
   end
 
   @impl true
-  def handle_info(:discover, %State{id: id} = state) do
-    objects =
-      with {:ok, request} <- MachineGun.get(state.uri, HTTPConfig.headers(state.http_config), %{pool_group: state.pool}),
-           {:ok, data} <- response_to_data(request),
-           {:ok, list} <- eval_list(data, state.instance) do
-        list
-      else
-        {:error, error} ->
-          Logger.warn("Could not fetch list of objects: #{inspect(error)}")
-          []
-      end
+  def handle_info(:discover, state) do
+    objects = fetch_objects(state)
+    :ok = discover(objects, state)
+    Process.send_after(self(), :discover, state.interval)
 
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(_, state) do
+    {:noreply, state}
+  end
+
+  defp fetch_objects(state) do
+    with {:ok, request} <- MachineGun.get(state.uri, HTTPConfig.headers(state.http_config), %{pool_group: state.pool}),
+         {:ok, data} <- response_to_data(request),
+         {:ok, list} <- eval_list(data, state.instance) do
+      {:ok, list}
+    else
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  defp discover({:ok, objects}, %State{id: id} = state) do
     discoveries =
       objects
       |> Enum.reduce(%{}, fn data, result ->
@@ -68,15 +80,11 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
       end)
 
     Discovery.discover(id, discoveries)
-    Process.send_after(self(), :discover, state.interval)
-
-    {:noreply, state}
+    :ok
   end
 
-  @impl true
-  def handle_info(_, state) do
-    # TODO: remove when Mojito stops leaking messages
-    {:noreply, state}
+  defp discover({:error, error}, _state) do
+    Logger.warn("Could not fetch list of objects: #{inspect(error)}")
   end
 
   defp eval_single(_data, path) when is_binary(path), do: {:ok, path}
