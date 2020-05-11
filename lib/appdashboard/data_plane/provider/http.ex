@@ -11,6 +11,7 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
   defmodule State do
     defstruct id: "",
               http_config: %HTTPConfig{},
+              pool: :default,
               uri: nil,
               extractor: %Extractor{},
               last_success: %{},
@@ -46,9 +47,9 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
     {extracted_data, new_state} =
       with {:ok, uri} <- eval_template(state.uri, %{"prev" => data}),
            {:ok, response} <-
-             Mojito.request(:get, uri, HTTPConfig.headers(state.http_config), "",
-               transport_opts: HTTPConfig.transport_opts(state.http_config)
-             ),
+            MachineGun.get(uri, HTTPConfig.headers(state.http_config), %{
+               pool_group: state.pool
+            }),
            {:ok, parsed_data} <- response_to_data(response),
            extracted_data = extract_data(parsed_data, data, state) do
         {extracted_data, %State{state | last_success: extracted_data}}
@@ -84,7 +85,7 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
     {:ok, Solid.render(tpl, data) |> to_string}
   end
 
-  defp response_to_data(%Mojito.Response{body: body, status_code: code})
+  defp response_to_data(%MachineGun.Response{body: body, status_code: code})
        when code in [200, 201, 202, 203] do
     # TODO: this shouldn't assume json
     body |> Jason.decode()
@@ -118,9 +119,9 @@ defmodule AppDashboard.DataPlane.Provider.HTTP do
     {:error, "URI is required"}
   end
 
-  defp populate_http_config(state, _config, %Source{type: "http", config: config})
+  defp populate_http_config(state, _config, %Source{id: id, type: "http", config: config})
        when is_map(config) do
-    {:ok, %State{state | http_config: HTTPConfig.create_config(config)}}
+    {:ok, %State{state | pool: "src_" <> id, http_config: HTTPConfig.create_config(config)}}
   end
 
   defp populate_http_config(state, _, _), do: {:ok, state}

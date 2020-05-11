@@ -52,8 +52,11 @@ defmodule AppDashboard.MixProject do
       {:toml, "~> 0.6.1"},
       {:file_system, "~> 0.2"},
       {:solid, "~> 0.4.0"},
-      {:mojito, "~> 0.6.3"},
-      {:warpath, "~> 0.2.1"}
+      {:warpath, "~> 0.2.1"},
+      # TODO: remove after gun 2.0 release
+      {:cowlib, "~> 2.8.0", override: true},
+      {:castore, "~> 0.1.0"},
+      {:machine_gun, "~> 0.1"}
     ]
   end
 

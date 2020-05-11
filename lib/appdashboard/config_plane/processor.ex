@@ -68,9 +68,28 @@ defmodule AppDashboard.ConfigPlane.Processor do
       %Config{config | instances: processed_instances}
       |> add_missing_apps_and_envs()
 
+    create_http_pools(processed_config)
     Snapshot.update(processed_config, name: snapshot)
 
     {:noreply, state}
+  end
+
+  # TODO: refactor and move into proper module
+  defp create_http_pools(%Config{sources: sources}) do
+    sources
+    |> Enum.filter(fn {_id, source} -> source.type == "http" end)
+    |> Enum.map(fn {id, source} -> {"src_" <> id, AppDashboard.Utils.HTTPConfig.create_config(source.config)} end)
+    |> Enum.each(fn {id, config} ->
+      Application.put_env(:machine_gun, id, %{
+        pool_size: 5,
+        pool_max_overflow: 10,
+        pool_timeout: 1000,
+        request_timeout: 3000,
+        conn_opts: %{
+          transport_opts: AppDashboard.Utils.HTTPConfig.transport_opts(config)
+        }
+      })
+    end)
   end
 
   defp add_missing_apps_and_envs(%Config{instances: instances} = config) do

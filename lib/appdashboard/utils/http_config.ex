@@ -42,7 +42,7 @@ defmodule AppDashboard.Utils.HTTPConfig do
   end
 
   defp populate_auth_bearer(output, %{"bearer" => value}) do
-    %HTTPConfig{output | headers: Map.put(output.headers, "Authorization", "Bearer " <> value)}
+    %HTTPConfig{output | headers: Map.put(output.headers, "authorization", "Bearer " <> value)}
   end
 
   defp populate_auth_bearer(output, _), do: output
@@ -64,7 +64,7 @@ defmodule AppDashboard.Utils.HTTPConfig do
        when is_binary(user) and is_binary(pwd) do
     value = Base.encode64(user <> ":" <> pwd)
 
-    %HTTPConfig{output | headers: Map.put(output.headers, "Authorization", "Basic " <> value)}
+    %HTTPConfig{output | headers: Map.put(output.headers, "authorization", "Basic " <> value)}
   end
 
   defp populate_auth_basic(output, _), do: output
@@ -75,27 +75,34 @@ defmodule AppDashboard.Utils.HTTPConfig do
 
   defp populate_headers(output, _), do: output
 
-  defp populate_tls(output, http_config) do
-    %HTTPConfig{output | transport_opts: do_populate_tls([], http_config)}
+  defp populate_tls(output, %{"tls_enabled" => true} = http_config) do
+    transport_opts =
+      [{:depth, 5}]
+      |> populate_server_auth(http_config)
+      |> populate_client_auth(http_config)
+
+    %HTTPConfig{output | transport_opts: transport_opts}
   end
 
-  defp do_populate_tls(opts, %{"tls_insecure" => true} = http_config) do
-    do_populate_tls([{:verify, :verify_none} | opts], Map.drop(http_config, ["tls_insecure"]))
+  defp populate_tls(output, _), do: output
+
+  defp populate_server_auth(opts, %{"tls_insecure" => true}) do
+    [{:verify, :verify_none} | opts]
   end
 
-  defp do_populate_tls(opts, %{"tls_cacert_file" => file} = http_config) when is_binary(file) do
-    do_populate_tls([{:cacertfile, file} | opts], Map.drop(http_config, ["tls_cacert_file"]))
+  defp populate_server_auth(opts, %{"tls_cacert_file" => file}) when is_binary(file) do
+    [{:verify, :verify_peer} | [{:cacertfile, file} | opts]]
   end
 
-  defp do_populate_tls(opts, %{"tls_clientcert_file" => file} = http_config)
-       when is_binary(file) do
-    do_populate_tls([{:cert_pem, file} | opts], Map.drop(http_config, ["tls_clientcert_file"]))
+  defp populate_server_auth(opts, _http) do
+    [{:verify, :verify_peer} | [{:cacertfile, CAStore.file_path()} | opts]]
   end
 
-  defp do_populate_tls(opts, %{"tls_clientkey_file" => file} = http_config)
-       when is_binary(file) do
-    do_populate_tls([{:key_pem, file} | opts], Map.drop(http_config, ["tls_clientkey_file"]))
+  defp populate_client_auth(opts, %{"tls_clientcert_file" => cert, "tls_clientkey_file" => key})
+       when is_binary(cert) and is_binary(key) do
+    [{:cert_pem, cert} | [{:key_pem, key} | opts]]
   end
 
-  defp do_populate_tls(opts, _), do: opts
+  defp populate_client_auth(opts, _http), do: opts
+
 end

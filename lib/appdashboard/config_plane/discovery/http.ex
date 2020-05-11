@@ -13,6 +13,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
   defmodule State do
     defstruct id: nil,
               http_config: %HTTPConfig{},
+              pool: :default,
               uri: nil,
               interval: 60 * 1000,
               instance: nil,
@@ -37,10 +38,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
   @impl true
   def handle_info(:discover, %State{id: id} = state) do
     objects =
-      with {:ok, request} <-
-             Mojito.request(:get, state.uri, HTTPConfig.headers(state.http_config), "",
-               transport_opts: HTTPConfig.transport_opts(state.http_config)
-             ),
+      with {:ok, request} <- MachineGun.get(state.uri, HTTPConfig.headers(state.http_config), %{pool_group: state.pool}),
            {:ok, data} <- response_to_data(request),
            {:ok, list} <- eval_list(data, state.instance) do
         list
@@ -100,7 +98,7 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
     end
   end
 
-  defp response_to_data(%Mojito.Response{body: body, status_code: code})
+  defp response_to_data(%MachineGun.Response{body: body, status_code: code})
        when code in [200, 201, 202, 203] do
     # TODO: this shouldn't assume json
     body |> Jason.decode()
@@ -180,9 +178,9 @@ defmodule AppDashboard.ConfigPlane.Discovery.HTTP do
 
   defp populate_application(_, _), do: {:error, "Application or application path is required"}
 
-  defp populate_http_config(state, _, %Source{type: "http", config: config})
+  defp populate_http_config(state, _, %Source{id: id, type: "http", config: config})
        when is_map(config) do
-    {:ok, %State{state | http_config: HTTPConfig.create_config(config)}}
+    {:ok, %State{state | pool: "src_" <> id, http_config: HTTPConfig.create_config(config)}}
   end
 
   defp populate_http_config(state, _, _), do: {:ok, state}

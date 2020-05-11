@@ -30,9 +30,14 @@ config :logger_json, :backend,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-# Mojito config
-config :mojito,
-  timeout: 2500
+# Configure default HTTP pool
+config :machine_gun,
+  default: %{
+    pool_size: 5,
+    pool_max_overflow: 10,
+    pool_timeout: 1000,
+    request_timeout: 3000
+  }
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
