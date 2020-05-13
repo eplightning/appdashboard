@@ -3,7 +3,7 @@ defmodule AppDashboard.ConfigPlane.Processor do
 
   require Logger
   alias AppDashboard.Config
-  alias AppDashboard.ConfigPlane.File.Parser
+  alias AppDashboard.Config.Parser
   alias AppDashboard.ConfigPlane.Snapshot
   alias AppDashboard.ConfigPlane.Processor.Discovery
 

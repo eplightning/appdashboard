@@ -3,7 +3,7 @@ defmodule AppDashboard.ConfigPlane.File.Loader do
   use GenServer
 
   require Logger
-  alias AppDashboard.ConfigPlane.File.Parser
+  alias AppDashboard.Config.Parser
 
   def start_link(opts) do
     {:ok, path} = Keyword.fetch(opts, :path)

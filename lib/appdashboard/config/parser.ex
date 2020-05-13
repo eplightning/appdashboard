@@ -1,4 +1,4 @@
-defmodule AppDashboard.ConfigPlane.File.Parser do
+defmodule AppDashboard.Config.Parser do
 
   alias AppDashboard.Config
 
@@ -10,6 +10,12 @@ defmodule AppDashboard.ConfigPlane.File.Parser do
     |> parse_hashmap(input, "discovery", &(parse_discovery(&1, &2)))
     |> parse_hashmap(input, "sources", &(parse_source(&1, &2)))
     |> parse_instances(input)
+  end
+
+  def parse_ui_config(%{} = input) do
+    %Config.Subset.Ui{}
+    |> parse_hashmap(input, "environments", &(parse_env(&1, &2)))
+    |> parse_hashmap(input, "applications", &(parse_app(&1, &2)))
   end
 
   def parse_instance(input) do

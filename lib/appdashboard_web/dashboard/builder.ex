@@ -1,10 +1,11 @@
 defmodule AppDashboardWeb.Dashboard.Builder do
 
   alias AppDashboard.Config.Subset.Ui
+  alias AppDashboard.Schema.InstanceData
 
-  def build(%Ui{applications: apps, environments: envs}, data) do
-    data
-    |> Enum.group_by(fn {{_env, app}, _v} -> app end, fn {{env, _app}, v} -> {env, v} end)
+  def build(%Ui{applications: apps, environments: envs}, instances) do
+    instances
+    |> Enum.group_by(fn %InstanceData{application: app} -> app end, fn %InstanceData{environment: env, data: data} -> {env, data} end)
     |> Enum.map(fn {app, instances} ->
       app_data = Map.fetch!(apps, app)
 
@@ -34,8 +35,12 @@ defmodule AppDashboardWeb.Dashboard.Builder do
 
   defp build_properties(_data), do: []
 
+  defp build_property(%{"key" => key, "name" => name, "link_key" => link_key}, data) do
+    {:ok, {name, Map.get(data, key, ""), Map.get(data, link_key, "")}}
+  end
+
   defp build_property(%{"key" => key, "name" => name}, data) do
-    {:ok, {name, Map.get(data, key, "")}}
+    {:ok, {name, Map.get(data, key, ""), ""}}
   end
 
   defp build_property(_, _data), do: {:error, :invalid_config}

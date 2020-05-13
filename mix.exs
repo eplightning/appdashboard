@@ -56,7 +56,9 @@ defmodule AppDashboard.MixProject do
       # TODO: remove after gun 2.0 release
       {:cowlib, "~> 2.8.0", override: true},
       {:castore, "~> 0.1.0"},
-      {:machine_gun, "~> 0.1"}
+      {:machine_gun, "~> 0.1"},
+      # TODO: Remove after Elixir 1.11
+      {:nimble_strftime, "~> 0.1.0"}
     ]
   end
 

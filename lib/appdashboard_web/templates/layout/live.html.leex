@@ -1,3 +1,13 @@
+<nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+  <div class="navbar-menu">
+    <div class="navbar-start">
+      <%= live_redirect "Dashboard", to: Routes.dashboard_path(@socket, :index), class: (if @socket.view == AppDashboardWeb.DashboardLive, do: "navbar-item is-active", else: "navbar-item") %>
+
+      <%= live_redirect "Snapshots", to: Routes.snapshots_path(@socket, :index), class: (if @socket.view in [AppDashboardWeb.SnapshotsLive, AppDashboardWeb.SnapshotLive], do: "navbar-item is-active", else: "navbar-item") %>
+    </div>
+  </div>
+</nav>
+
 <main role="main" class="container is-fluid section">
   <%= if live_flash(@flash, :info) != nil do %>
     <div class="notification is-info" role="alert">

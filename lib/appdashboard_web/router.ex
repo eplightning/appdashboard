@@ -18,6 +18,9 @@ defmodule AppDashboardWeb.Router do
     pipe_through :browser
 
     live "/", DashboardLive, :index
+    live "/snapshots", SnapshotsLive, :index
+    live "/snapshots/create", SnapshotsLive, :create
+    live "/snapshots/:id", SnapshotLive, :view
   end
 
   # Other scopes may use custom stacks.

@@ -9,7 +9,8 @@ import Config
 
 config :appdashboard,
   namespace: AppDashboard,
-  ecto_repos: [AppDashboard.Repo]
+  ecto_repos: [AppDashboard.Repo],
+  config_path: "examples/config.toml"
 
 # Configures the endpoint
 config :appdashboard, AppDashboardWeb.Endpoint,

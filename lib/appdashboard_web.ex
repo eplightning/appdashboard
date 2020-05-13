@@ -46,6 +46,8 @@ defmodule AppDashboardWeb do
       use Phoenix.LiveView,
         layout: {AppDashboardWeb.LayoutView, "live.html"}
 
+      alias AppDashboardWeb.Components
+
       unquote(view_helpers())
     end
   end

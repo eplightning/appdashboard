@@ -1,0 +1,89 @@
+<nav class="level">
+  <div class="level-left">
+    <h1 class="level-item has-text-centered title">
+      Snapshots
+    </p>
+  </div>
+  <div class="level-right">
+    <div class="level-item">
+      <form phx-submit="filter">
+        <div class="field has-addons">
+          <p class="control">
+            <input class="input" name="filter[name]" type="text" placeholder="Find a snapshot" value="<%= @query %>">
+          </p>
+          <p class="control">
+            <button class="button" type="submit">
+              Search
+            </button>
+          </p>
+        </div>
+      </form>
+    </div>
+    <p class="level-item">
+      <%= live_patch "New snapshot", to: Routes.snapshots_path(@socket, :create), class: "button is-success" %>
+    </p>
+  </div>
+</nav>
+
+<%= for snapshots <- Enum.chunk_every(@snapshots, 4) do %>
+<div class="columns">
+  <%= for snapshot <- snapshots do %>
+  <div class="column">
+    <div class="box snapshot" phx-click="open_snapshot" phx-value-id="<%= snapshot.id %>">
+      <article class="media">
+        <div class="media-content">
+          <div class="content">
+            <p>
+              <strong><%= snapshot.name %></strong>
+              <br>
+              <%= snapshot.inserted_at |> NimbleStrftime.format("%c") %>
+            </p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+  <% end %>
+</div>
+<% end %>
+
+<nav class="pagination" role="navigation" aria-label="pagination">
+  <%= if @page > 1 do %>
+  <%= live_patch "Previous", to: Routes.snapshots_path(@socket, :index, %{"page" => @page - 1}), class: "pagination-previous" %>
+  <% else %>
+  <a class="pagination-previous" disabled>Previous</a>
+  <% end %>
+
+  <%= if @page >= @pages do %>
+  <a class="pagination-next" disabled>Next page</a>
+  <% else %>
+  <%= live_patch "Next page", to: Routes.snapshots_path(@socket, :index, %{"page" => @page + 1}), class: "pagination-next" %>
+  <% end %>
+
+  <ul class="pagination-list">
+  </ul>
+</nav>
+
+<div class="modal<%= if @live_action == :create do %> is-active<% end %>">
+  <div class="modal-background"></div>
+  <%= f = form_for @changeset, "#", [phx_submit: :create] %>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Create snapshot</p>
+        <%= live_patch "", to: Routes.snapshots_path(@socket, :index), class: "delete" %>
+      </header>
+      <section class="modal-card-body">
+        <div class="field">
+          <label class="label">Name</label>
+          <div class="control">
+            <%= text_input f, :name, class: "input" %>
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-success" type="submit">Save changes</button>
+        <%= live_patch "Cancel", to: Routes.snapshots_path(@socket, :index), class: "button" %>
+      </footer>
+    </div>
+  </form>
+</div>

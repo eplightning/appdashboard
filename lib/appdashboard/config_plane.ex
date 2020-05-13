@@ -4,16 +4,16 @@ defmodule AppDashboard.ConfigPlane do
 
   alias AppDashboard.ConfigPlane
 
-  def start_link(arg) do
-    Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
+  def start_link(config_path) do
+    Supervisor.start_link(__MODULE__, config_path, name: __MODULE__)
   end
 
   @impl true
-  def init(_init_arg) do
+  def init(config_path) do
     children = [
       ConfigPlane.Snapshot,
       ConfigPlane.Processor,
-      {ConfigPlane.File.Loader, path: "examples/config.toml"}
+      {ConfigPlane.File.Loader, path: config_path}
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)

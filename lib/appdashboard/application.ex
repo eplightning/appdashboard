@@ -14,7 +14,7 @@ defmodule AppDashboard.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: AppDashboard.PubSub},
       # Config/data plane
-      AppDashboard.ConfigPlane,
+      {AppDashboard.ConfigPlane, Application.fetch_env!(:appdashboard, :config_path)},
       AppDashboard.DataPlane,
       # Start the Endpoint (http/https)
       AppDashboardWeb.Endpoint

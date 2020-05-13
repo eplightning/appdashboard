@@ -4,6 +4,11 @@
 # remember to add this file to your .gitignore.
 import Config
 
+config_path = System.get_env("CONFIG_PATH") || "config.toml"
+
+config :appdashboard,
+  config_path: config_path
+
 database_url =
   System.get_env("DATABASE_URL") ||
     raise """
