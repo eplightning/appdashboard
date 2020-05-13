@@ -1,6 +1,5 @@
 FROM elixir:1.10-alpine AS build
 
-
 # install build dependencies
 RUN apk add --no-cache build-base npm git python
 
@@ -33,6 +32,9 @@ COPY lib lib
 
 RUN mix do compile, release
 
+ADD scripts/run_application.sh /app/_build/prod/rel/appdashboard/bin/
+RUN chmod +x /app/_build/prod/rel/appdashboard/bin/run_application.sh
+
 # prepare release image
 FROM alpine:3.11
 
@@ -46,4 +48,4 @@ ENV HOME=/app
 
 COPY --from=build --chown=nobody:nobody /app/_build/prod/rel/appdashboard ./
 
-CMD ["bin/appdashboard", "start"]
+CMD ["bin/run_application.sh"]
