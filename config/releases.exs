@@ -6,8 +6,8 @@ import Config
 
 config_path = System.get_env("CONFIG_PATH") || "config.toml"
 
-config :appdashboard,
-  config_path: config_path
+config :appdashboard, AppDashboard.ConfigPlane,
+  loaders: [{AppDashboard.ConfigPlane.File.Loader, path: config_path}]
 
 database_url =
   System.get_env("DATABASE_URL") ||
@@ -17,7 +17,6 @@ database_url =
     """
 
 config :appdashboard, AppDashboard.Repo,
-  # ssl: true,
   url: database_url,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 

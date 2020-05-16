@@ -1,9 +1,9 @@
 FROM elixir:1.10-alpine AS build
 
 # install build dependencies
-RUN apk add --no-cache build-base npm git python
+RUN apk add --no-cache build-base npm git python && \
+    mkdir /app
 
-RUN mkdir /app
 WORKDIR /app
 
 # install hex + rebar
@@ -24,8 +24,8 @@ RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
 
 COPY priv priv
 COPY assets assets
-RUN npm run --prefix ./assets deploy
-RUN mix phx.digest
+RUN npm run --prefix ./assets deploy && \
+    mix phx.digest
 
 # compile and build release
 COPY lib lib
@@ -38,9 +38,8 @@ RUN chmod +x /app/_build/prod/rel/appdashboard/bin/run_application.sh
 # prepare release image
 FROM alpine:3.11
 
-RUN apk add --no-cache openssl ncurses-libs inotify-tools
-
-RUN mkdir /app && chown nobody:nobody /app
+RUN apk add --no-cache openssl ncurses-libs inotify-tools && \
+    mkdir /app && chown nobody:nobody /app
 
 WORKDIR /app
 USER nobody:nobody

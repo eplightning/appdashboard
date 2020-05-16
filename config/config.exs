@@ -12,6 +12,9 @@ config :appdashboard,
   ecto_repos: [AppDashboard.Repo],
   config_path: "examples/config.toml"
 
+config :appdashboard, AppDashboard.ConfigPlane,
+  loaders: []
+
 # Configures the endpoint
 config :appdashboard, AppDashboardWeb.Endpoint,
   url: [host: "localhost"],

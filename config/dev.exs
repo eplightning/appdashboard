@@ -1,5 +1,9 @@
 import Config
 
+# Configure config plane
+config :appdashboard, AppDashboard.ConfigPlane,
+  loaders: [{AppDashboard.ConfigPlane.File.Loader, path: "examples/config.toml"}]
+
 # Configure your database
 config :appdashboard, AppDashboard.Repo,
   username: "postgres",

@@ -1,3 +1,4 @@
+# Environments are K8s clusters/namespaces or any other arbitrary way of dividing application instances
 [environments.dev]
 name = "Dev"
 variables = { x = "test", y = 2 }
@@ -7,11 +8,16 @@ order = 0
 name = "An appri"
 variables = { app_var = "app" }
 
+# Templates are mostly used for auto-discovered application instances, nothing's stopping you from using them in static instance configurations tho
+# When generating application instance all variables specified in env/app are available here
+# Additionally there's special reserved variable `discovery` which holds data from auto-discovery
 [templates.template]
 template = """
+# data.dashboard_config is a special variable used to configure which fields are displayed in dashboard
 [[data.dashboard_config.properties]]
 name = "Version"
 key = "version"
+link_key = "version"
 
 [[data.dashboard_config.properties]]
 name = "Name"
@@ -21,20 +27,29 @@ key = "name"
 type = "http"
 source = "http-test"
 name = "{{ inst_var }}"
+order = 0
 
 [providers.something.config]
-uri = "https://127.0.0.1:16443/api/v1/namespaces/test/configmaps/{{ discovery.metadata.name }}"
-interval = 10000
+# Please note that URI of HTTP provider can be a template
+uri = "https://localhost:16443/api/v1/namespaces/test/configmaps/{{ discovery.metadata.name }}"
+interval_min = 10000
+interval_max = 20000
 
 [providers.something.config.extractors.jsonpath]
 version = "$.metadata.resourceVersion"
 name = "$.metadata.name"
+
+[providers.something.config.extractors.template]
+{% raw %}
+test = "{{ extracted.name }} {{ prev.dashboard_config.properties.name }}"
+{% endraw %}
 """
 
 [sources.dev-cluster]
 name = "Dev Cluster"
 type = "kubernetess"
 
+# Currently sources are used to configure HTTP pools used by providers and auto-discoveries
 [sources.http-test]
 name = "HTTP test"
 type = "http"
@@ -46,11 +61,12 @@ auth_type = "bearer" # bearer | basic | none
 # basic_pwd_file = "file"
 bearer = "eyJhbGciOiJSUzI1NiIsImtpZCI6Ilp0UVJnaFJoWkVheWY1T24wTkRSUm1UMElyVDdDVGVwbE1NNDVmdXdDLTQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJ0ZXN0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImVsaXhpci10b2tlbi03d2NneiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJlbGl4aXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJmZDdkMjc4Yy03ZDJlLTQ2ZjgtOTU3Yi05YTdjMDE1YzE4YzkiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6dGVzdDplbGl4aXIifQ.amRDMth8hZwNk2AS0qqQ9xEP52xsvGt0BtQNgCe1SIxeH7-U3ZAOnSYk16HtGchZ2GCXhoJW6Eleq9E3w6nBpT2MI-zcDuEUdbicDyluseLJljigzjYfryK3NNeFF8xQf0Ngpp1efPuTvOOgzSoQoBjQU5rhDFsG6DPB7v-AqnIJjcHJqJ-zpKDzV8wQy48ydc79tri3f5yIPR4SlqtQpreMC8okOxHB1eWhQPc-VGn_x3xqa7z2daxJ0d6d69uPOXKGcPDI-Yv9hmOkv1JmrsKRwXkiIkdEYuD2otDNWcREng-PSGhJ6FzLxTR67LdV65jESGUwKA3l6vtMHEtnjw"
 # bearer_file = ""
-# tls_insecure = true
-tls_cacert_file = "/home/eplightning/KubeTests/cert"
+tls_insecure = true
+tls_enabled = true
+# tls_cacert_file = "/home/eplightning/KubeTests/cert"
 # tls_clientcert_file = "file"
 # tls_clientkey_file = "file"
-# extra_headers = { "X-Nice-Header" = "header" }
+# extra_headers = { "x-nice-header" = "header" }
 
 [discovery.dev-kubernetes]
 name = "Autodiscovery K8s"
@@ -58,31 +74,15 @@ type = "http"
 source = "http-test"
 
 [discovery.dev-kubernetes.config]
-uri = "https://127.0.0.1:16443/api/v1/namespaces/test/configmaps"
+uri = "https://localhost:16443/api/v1/namespaces/test/configmaps"
+# JSON path for the instance data, available in templates as a `discovery` variable
 instance_path = "$.items[*]"
+# app, env and template can be either JSON path or static string
 environment_path = "$.metadata.name"
+# environment = "statically specified environment"
 template = "template"
+# template_path = "json_path of template id"
 application = "app"
+# application_path = "json_path of application id"
 interval = 10000
 
-# [[instances]]
-# environment = "dev"
-# application = "app"
-# variables = { inst_var = "app" }
-# data = { some_extra_data = "data" }
-
-# [instances.extractors]
-# version = "$.providers.openshift.image_tag"
-
-# [instances.providers.openshift]
-# type = "http"
-# source = "http-test"
-# name = "Openshift"
-# uri = "https://127.0.0.1:16443"
-
-# [[instances]]
-# environment = "dev"
-# application = "app"
-# template = "template"
-# variables = { inst_var = "app" }
-# data = { some_extra_data = "data2" }

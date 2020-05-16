@@ -4,19 +4,18 @@ defmodule AppDashboard.ConfigPlane do
 
   alias AppDashboard.ConfigPlane
 
-  def start_link(config_path) do
-    Supervisor.start_link(__MODULE__, config_path, name: __MODULE__)
+  def start_link(config) do
+    Supervisor.start_link(__MODULE__, config, name: __MODULE__)
   end
 
   @impl true
-  def init(config_path) do
+  def init(config) do
     children = [
       ConfigPlane.Snapshot,
-      ConfigPlane.Processor,
-      {ConfigPlane.File.Loader, path: config_path}
+      ConfigPlane.Processor
     ]
 
-    Supervisor.init(children, strategy: :rest_for_one)
+    Supervisor.init(children ++ config[:loaders], strategy: :rest_for_one)
   end
 
 end

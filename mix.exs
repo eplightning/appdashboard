@@ -53,11 +53,11 @@ defmodule AppDashboard.MixProject do
       {:file_system, "~> 0.2"},
       {:solid, "~> 0.4.0"},
       {:warpath, "~> 0.2.1"},
-      # TODO: remove after gun 2.0 release
+      # TODO: Remove after gun 2.0 release
       {:cowlib, "~> 2.8.0", override: true},
       {:castore, "~> 0.1.0"},
       {:machine_gun, "~> 0.1"},
-      # TODO: Remove after Elixir 1.11
+      # TODO: Remove after Elixir 1.11 release
       {:nimble_strftime, "~> 0.1.0"}
     ]
   end
