@@ -1,7 +1,7 @@
 FROM elixir:1.11-alpine AS build
 
 # install build dependencies
-RUN apk add --no-cache build-base npm git python && \
+RUN apk add --no-cache build-base npm git python3 && \
     mkdir /app
 
 WORKDIR /app
@@ -36,7 +36,7 @@ ADD scripts/run_application.sh /app/_build/prod/rel/appdashboard/bin/
 RUN chmod +x /app/_build/prod/rel/appdashboard/bin/run_application.sh
 
 # prepare release image
-FROM alpine:3.11
+FROM alpine:3.13
 
 RUN apk add --no-cache openssl ncurses-libs inotify-tools && \
     mkdir /app && chown nobody:nobody /app
