@@ -4,8 +4,8 @@ defmodule AppDashboard.MixProject do
   def project do
     [
       app: :appdashboard,
-      version: "0.1.0",
-      elixir: "~> 1.7",
+      version: "0.2.0",
+      elixir: "~> 1.11",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -33,15 +33,15 @@ defmodule AppDashboard.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.5.1"},
+      {:phoenix, "~> 1.5.8"},
       {:phoenix_ecto, "~> 4.1"},
       {:ecto_sql, "~> 3.4"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_live_view, "~> 0.12.0"},
-      {:floki, ">= 0.0.0", only: :test},
+      {:phoenix_live_view, "~> 0.15.1"},
+      {:floki, ">= 0.27.0", only: :test},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_dashboard, "~> 0.2.0"},
+      {:phoenix_live_dashboard, "~> 0.4"},
       {:telemetry_metrics, "~> 0.4"},
       {:telemetry_poller, "~> 0.4"},
       {:telemetry_metrics_prometheus, "~> 0.4"},
@@ -51,14 +51,12 @@ defmodule AppDashboard.MixProject do
       {:logger_json, "~> 4.0"},
       {:toml, "~> 0.6.1"},
       {:file_system, "~> 0.2"},
-      {:solid, "~> 0.4.0"},
-      {:warpath, "~> 0.2.1"},
+      {:solid, "~> 0.7.1"},
+      {:warpath, "~> 0.6.0"},
       # TODO: Remove after gun 2.0 release
-      {:cowlib, "~> 2.8.0", override: true},
+      {:cowlib, "~> 2.10.1", override: true},
       {:castore, "~> 0.1.0"},
       {:machine_gun, "~> 0.1"},
-      # TODO: Remove after Elixir 1.11 release
-      {:nimble_strftime, "~> 0.1.0"}
     ]
   end
 

@@ -17,8 +17,6 @@
 - Probably should tweak supervisor values
 - Don't launch full application (HTTP endpoint, config/data plane) when running migrations/other stuff in release.ex
 - Upgrade to Gun 2.0 when released, remove cowlib dependency override
-- Upgrade to Elixir 1.11 when released and remove nimble_strftime
-- Add support for compiling JSONPath expression when Warpath 0.3 releases
 - Documentation
 - Add some actual health checks in health probe plug
 
@@ -27,5 +25,3 @@
 - More tests
 - Consider using Ecto for config structures
 - Should probably use for comprehensions more
-
-
