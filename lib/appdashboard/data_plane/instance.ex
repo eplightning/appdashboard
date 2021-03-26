@@ -7,13 +7,14 @@ defmodule AppDashboard.DataPlane.Instance do
   alias AppDashboard.Config.Instance, as: InstanceConfig
   alias AppDashboard.Utils.JSONPath
 
-  @provider_map %{"http" => AppDashboard.DataPlane.Provider.HTTP}
+  @provider_map %{"http" => AppDashboard.DataPlane.Provider.HTTP, "docker_image" => AppDashboard.DataPlane.Provider.DockerImage}
   @provider_types Map.keys(@provider_map)
 
   defmodule State do
     defstruct providers: [], extractors: %{}, initial_data: %{}, id: {}, leader: nil
   end
 
+  @spec start_link({any, any}) :: :ignore | {:error, any} | {:ok, pid}
   def start_link({_instance, _leader} = initial_arg) do
     GenServer.start_link(__MODULE__, initial_arg)
   end
