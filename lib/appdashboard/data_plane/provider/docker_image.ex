@@ -15,6 +15,7 @@ defmodule AppDashboard.DataPlane.Provider.DockerImage do
               pool: :default,
               image: nil,
               default_registry: nil,
+              force_default: false,
               extractor: %Extractor{},
               last_success: %{},
               interval: 60 * 1000
@@ -48,7 +49,8 @@ defmodule AppDashboard.DataPlane.Provider.DockerImage do
   def handle_call({:update_data, data}, _from, state) do
     {extracted_data, new_state} =
       with {:ok, image_spec} <- eval_template(state.image, %{"prev" => data}),
-           {:ok, image} <- DockerRegistry.parse_image(image_spec, state.default_registry),
+           {:ok, raw_image} <- DockerRegistry.parse_image(image_spec, state.default_registry),
+           image = transform_image(raw_image, state),
            {:ok, raw_manifest} <- manifest_request(image, state),
            {:ok, response} <- blob_request(image, raw_manifest, state),
            {:ok, parsed_data} <- response_to_data(response),
@@ -71,10 +73,21 @@ defmodule AppDashboard.DataPlane.Provider.DockerImage do
     {:noreply, state}
   end
 
+  defp transform_image({type, _, name, tag}, %State{
+         force_default: true,
+         default_registry: registry
+       }),
+       do: {type, registry, name, tag}
+
+  defp transform_image(image, _), do: image
+
   defp manifest_request(image, state) do
     uri = DockerRegistry.manifest_url(image)
 
-    headers = [{"accept", "application/vnd.docker.distribution.manifest.v2+json"} | HTTPConfig.headers(state.http_config)]
+    headers = [
+      {"accept", "application/vnd.docker.distribution.manifest.v2+json"}
+      | HTTPConfig.headers(state.http_config)
+    ]
 
     MachineGun.get(uri, headers, %{
       pool_group: state.pool
@@ -152,18 +165,36 @@ defmodule AppDashboard.DataPlane.Provider.DockerImage do
   defp populate_misc(state, config, _source) do
     {
       :ok,
-      %State{state | interval: parse_interval(config), default_registry: parse_default_registry(config)}
+      %State{
+        state
+        | interval: parse_interval(config),
+          default_registry: parse_default_registry(config),
+          force_default: parse_force_default(config)
+      }
     }
   end
 
-  defp parse_default_registry(%{"default_registry" => registry}) when is_binary(registry) and registry != "", do: registry
+  defp parse_force_default(%{"force_default" => force_default})
+       when is_boolean(force_default),
+       do: force_default
+
+  defp parse_force_default(_), do: false
+
+  defp parse_default_registry(%{"default_registry" => registry})
+       when is_binary(registry) and registry != "",
+       do: registry
+
   defp parse_default_registry(_), do: "registry-1.docker.io"
 
-  defp parse_interval(%{"interval_min" => min, "interval_max" => max}) when is_number(min) and is_number(max), do: {min, max}
+  defp parse_interval(%{"interval_min" => min, "interval_max" => max})
+       when is_number(min) and is_number(max),
+       do: {min, max}
+
   defp parse_interval(%{"interval" => interval}) when is_number(interval), do: interval
   defp parse_interval(_), do: 60 * 1000
 
-  defp populate_extractors(state, %{"extractors" => extractors}, _source) when is_map(extractors) do
+  defp populate_extractors(state, %{"extractors" => extractors}, _source)
+       when is_map(extractors) do
     {:ok, %State{state | extractor: Extractor.create_config(extractors)}}
   end
 
