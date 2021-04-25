@@ -2,7 +2,10 @@ import Config
 
 # Configure config plane
 config :appdashboard, AppDashboard.ConfigPlane,
-  loaders: [{AppDashboard.ConfigPlane.File.Loader, path: "examples/config.toml"}]
+  loaders: [
+    {AppDashboard.ConfigPlane.File.Loader,
+     path: "examples/config.toml", reload_interval: 60 * 1000}
+  ]
 
 # Configure your database
 config :appdashboard, AppDashboard.Repo,

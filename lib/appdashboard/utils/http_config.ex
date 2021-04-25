@@ -3,21 +3,31 @@ defmodule AppDashboard.Utils.HTTPConfig do
 
   alias AppDashboard.Utils.HTTPConfig
 
-  defstruct headers: %{}, transport_opts: []
-
-  def create_config(http_config) do
-    %HTTPConfig{}
-    |> populate_auth(http_config)
-    |> populate_headers(http_config)
-    |> populate_tls(http_config)
+  defmodule Processed do
+    defstruct headers: %{}, transport_opts: []
   end
 
-  def headers(%HTTPConfig{headers: headers}) do
+  defstruct raw_config: %{}
+
+  def create_config(http_config) do
+    %HTTPConfig{raw_config: http_config}
+  end
+
+  def headers(%HTTPConfig{raw_config: raw_config}) do
+    %HTTPConfig.Processed{headers: headers} = process_config(raw_config)
     Map.to_list(headers)
   end
 
-  def transport_opts(%HTTPConfig{transport_opts: transport_opts}) do
+  def transport_opts(%HTTPConfig{raw_config: raw_config}) do
+    %HTTPConfig.Processed{transport_opts: transport_opts} = process_config(raw_config)
     transport_opts
+  end
+
+  defp process_config(raw_config) do
+    %HTTPConfig.Processed{}
+    |> populate_auth(raw_config)
+    |> populate_headers(raw_config)
+    |> populate_tls(raw_config)
   end
 
   defp populate_auth(output, %{"auth_type" => "bearer"} = config) do
@@ -42,14 +52,16 @@ defmodule AppDashboard.Utils.HTTPConfig do
   end
 
   defp populate_auth_bearer(output, %{"bearer" => value}) do
-    %HTTPConfig{output | headers: Map.put(output.headers, "authorization", "Bearer " <> value)}
+    %HTTPConfig.Processed{
+      output
+      | headers: Map.put(output.headers, "authorization", "Bearer " <> value)
+    }
   end
 
   defp populate_auth_bearer(output, _), do: output
 
   defp populate_auth_basic(output, %{"basic_user" => user, "basic_pwd_file" => file})
        when is_binary(user) and is_binary(file) do
-
     case File.read(file) do
       {:ok, value} ->
         populate_auth_basic(output, %{"basic_user" => user, "basic_pwd" => value})
@@ -64,13 +76,16 @@ defmodule AppDashboard.Utils.HTTPConfig do
        when is_binary(user) and is_binary(pwd) do
     value = Base.encode64(user <> ":" <> pwd)
 
-    %HTTPConfig{output | headers: Map.put(output.headers, "authorization", "Basic " <> value)}
+    %HTTPConfig.Processed{
+      output
+      | headers: Map.put(output.headers, "authorization", "Basic " <> value)
+    }
   end
 
   defp populate_auth_basic(output, _), do: output
 
   defp populate_headers(output, %{"extra_headers" => headers}) when is_map(headers) do
-    %HTTPConfig{output | headers: Map.merge(output.headers, headers)}
+    %HTTPConfig.Processed{output | headers: Map.merge(output.headers, headers)}
   end
 
   defp populate_headers(output, _), do: output
@@ -81,7 +96,7 @@ defmodule AppDashboard.Utils.HTTPConfig do
       |> populate_server_auth(http_config)
       |> populate_client_auth(http_config)
 
-    %HTTPConfig{output | transport_opts: transport_opts}
+    %HTTPConfig.Processed{output | transport_opts: transport_opts}
   end
 
   defp populate_tls(output, _), do: output
@@ -104,5 +119,4 @@ defmodule AppDashboard.Utils.HTTPConfig do
   end
 
   defp populate_client_auth(opts, _http), do: opts
-
 end

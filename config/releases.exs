@@ -5,9 +5,12 @@
 import Config
 
 config_path = System.get_env("CONFIG_PATH") || "config.toml"
+config_interval = String.to_integer(System.get_env("CONFIG_RELOAD_INTERVAL") || "600000")
 
 config :appdashboard, AppDashboard.ConfigPlane,
-  loaders: [{AppDashboard.ConfigPlane.File.Loader, path: config_path}]
+  loaders: [
+    {AppDashboard.ConfigPlane.File.Loader, path: config_path, reload_interval: config_interval}
+  ]
 
 database_url =
   System.get_env("DATABASE_URL") ||

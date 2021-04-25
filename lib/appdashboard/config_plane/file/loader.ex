@@ -1,5 +1,4 @@
 defmodule AppDashboard.ConfigPlane.File.Loader do
-
   use GenServer
 
   require Logger
@@ -7,10 +6,12 @@ defmodule AppDashboard.ConfigPlane.File.Loader do
 
   def start_link(opts) do
     {:ok, path} = Keyword.fetch(opts, :path)
+    {:ok, interval} = Keyword.fetch(opts, :reload_interval)
+
     subscriber = Keyword.get(opts, :subscriber, AppDashboard.ConfigPlane.Processor)
     name = Keyword.get(opts, :name, __MODULE__)
 
-    GenServer.start_link(__MODULE__, {path, subscriber}, name: name)
+    GenServer.start_link(__MODULE__, {path, subscriber, interval}, name: name)
   end
 
   def reload(opts \\ []) do
@@ -19,10 +20,12 @@ defmodule AppDashboard.ConfigPlane.File.Loader do
   end
 
   @impl true
-  def init({path, _} = state) do
+  def init({path, _, interval} = state) do
     Process.send_after(self(), :reload, 0)
+    schedule_auto_reload(interval)
 
     {:ok, pid} = FileSystem.start_link(dirs: [path])
+
     FileSystem.subscribe(pid)
 
     {:ok, state}
@@ -48,7 +51,13 @@ defmodule AppDashboard.ConfigPlane.File.Loader do
   end
 
   @impl true
-  def handle_info(:reload, {path, pid} = state) do
+  def handle_info(:auto_reload, {_, _, interval} = state) do
+    schedule_auto_reload(interval)
+    handle_info(:reload, state)
+  end
+
+  @impl true
+  def handle_info(:reload, {path, pid, _} = state) do
     case load_config(path) do
       {:ok, parsed} -> send(pid, {:config, parsed})
       {:error, error} -> Logger.error("Error while parsing config #{inspect(error)}")
@@ -69,4 +78,10 @@ defmodule AppDashboard.ConfigPlane.File.Loader do
     end
   end
 
+  defp schedule_auto_reload(0), do: {:ok}
+
+  defp schedule_auto_reload(interval) when is_number(interval) do
+    Process.send_after(self(), :auto_reload, interval)
+    {:ok}
+  end
 end
